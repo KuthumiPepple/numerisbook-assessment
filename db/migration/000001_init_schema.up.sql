@@ -3,7 +3,7 @@ CREATE TABLE "invoices" (
   "customer_id" bigint NOT NULL,
   "vendor_id" bigint NOT NULL,
   "issue_date" timestamptz NOT NULL DEFAULT (now()),
-  "due_date" timestamptz NOT NULL DEFAULT (issue_date + interval '30 days'),
+  "due_date" timestamptz NOT NULL DEFAULT (now() + interval '30 days'),
   "status" varchar NOT NULL DEFAULT 'draft',
   "subtotal" bigint NOT NULL DEFAULT 0,
   "discount_rate" bigint NOT NULL DEFAULT 0,
