@@ -10,6 +10,44 @@ import (
 	"time"
 )
 
+const addLineItem = `-- name: AddLineItem :one
+INSERT INTO line_items (
+    invoice_number,
+    description,
+    quantity,
+    unit_price,
+    total_price
+) VALUES ($1, $2, $3, $4, $5) RETURNING id, invoice_number, description, quantity, unit_price, total_price
+`
+
+type AddLineItemParams struct {
+	InvoiceNumber int64  `json:"invoice_number"`
+	Description   string `json:"description"`
+	Quantity      int64  `json:"quantity"`
+	UnitPrice     int64  `json:"unit_price"`
+	TotalPrice    int64  `json:"total_price"`
+}
+
+func (q *Queries) AddLineItem(ctx context.Context, arg AddLineItemParams) (LineItem, error) {
+	row := q.db.QueryRow(ctx, addLineItem,
+		arg.InvoiceNumber,
+		arg.Description,
+		arg.Quantity,
+		arg.UnitPrice,
+		arg.TotalPrice,
+	)
+	var i LineItem
+	err := row.Scan(
+		&i.ID,
+		&i.InvoiceNumber,
+		&i.Description,
+		&i.Quantity,
+		&i.UnitPrice,
+		&i.TotalPrice,
+	)
+	return i, err
+}
+
 const addNoItemsInvoice = `-- name: AddNoItemsInvoice :one
 INSERT INTO invoices (
     customer_id, 

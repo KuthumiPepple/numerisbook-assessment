@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAddNoItemsInvoice(t *testing.T) {
+func addRandomNoItemsInvoice(t *testing.T) Invoice {
 	customer := addRandomCustomer(t)
 	vendor := addRandomVendor(t)
 
@@ -36,5 +36,32 @@ func TestAddNoItemsInvoice(t *testing.T) {
 	require.Zero(t, invoice.TotalAmount)
 	require.NotEmpty(t, invoice.BillingCurrency)
 	require.NotEmpty(t, invoice.Note)
-	
+
+	return invoice
+}
+
+func TestAddNoItemsInvoice(t *testing.T) {
+	addRandomNoItemsInvoice(t)
+}
+
+func TestAddLineItem(t *testing.T) {
+	invoice := addRandomNoItemsInvoice(t)
+
+	arg := AddLineItemParams{
+		InvoiceNumber: invoice.InvoiceNumber,
+		Description:   util.RandomString(10),
+		Quantity:      util.RandomInt(1, 10),
+		UnitPrice:     util.RandomInt(100, 1000),
+	}
+	arg.TotalPrice = arg.Quantity * arg.UnitPrice
+
+	lineItem, err := testDb.AddLineItem(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, lineItem)
+	require.NotZero(t, lineItem.ID)
+	require.Equal(t, arg.InvoiceNumber, lineItem.InvoiceNumber)
+	require.Equal(t, arg.Description, lineItem.Description)
+	require.Equal(t, arg.Quantity, lineItem.Quantity)
+	require.Equal(t, arg.UnitPrice, lineItem.UnitPrice)
+	require.Equal(t, arg.Quantity*arg.UnitPrice, lineItem.TotalPrice)
 }

@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	AddCustomer(ctx context.Context, arg AddCustomerParams) (Customer, error)
+	AddLineItem(ctx context.Context, arg AddLineItemParams) (LineItem, error)
 	AddNoItemsInvoice(ctx context.Context, arg AddNoItemsInvoiceParams) (Invoice, error)
 	AddVendor(ctx context.Context, arg AddVendorParams) (Vendor, error)
 }
