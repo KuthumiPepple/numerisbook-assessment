@@ -50,3 +50,13 @@ func RandomEmail() string {
 func RandomAddress() string {
 	return fmt.Sprintf("%d %s St", RandomInt(1, 999), RandomString(5))
 }
+
+// RandomDate generates a random past date relative to the current time
+func RandomPastDate() time.Time {
+	return time.Now().Add(-time.Duration(RandomInt(1, 30)) * 24 * time.Hour)
+}
+
+// RandomDate generates a random future date relative to the current time
+func RandomFutureDate() time.Time {
+	return time.Now().Add(time.Duration(RandomInt(1, 30)) * 24 * time.Hour)
+}

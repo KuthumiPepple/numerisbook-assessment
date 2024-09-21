@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAddVendor(t *testing.T) {
+func addRandomVendor(t *testing.T) Vendor {
 	arg := AddVendorParams{
 		Name:            util.RandomName(),
 		Phone:           util.RandomPhone(),
@@ -30,4 +30,9 @@ func TestAddVendor(t *testing.T) {
 	require.Equal(t, arg.BankAccountNo, vendor.BankAccountNo)
 	require.Equal(t, arg.BankName, vendor.BankName)
 	require.NotZero(t, vendor.ID)
+
+	return vendor
+}
+func TestAddVendor(t *testing.T) {
+	addRandomVendor(t)
 }

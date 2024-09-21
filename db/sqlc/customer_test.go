@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAddCustomer(t *testing.T) {
+func addRandomCustomer(t *testing.T) Customer {
 	arg := AddCustomerParams{
 		Name:    util.RandomName(),
 		Phone:   util.RandomPhone(),
@@ -24,4 +24,10 @@ func TestAddCustomer(t *testing.T) {
 	require.Equal(t, arg.Address, customer.Address)
 	require.Equal(t, arg.Email, customer.Email)
 	require.NotZero(t, customer.ID)
+
+	return customer
+}
+
+func TestAddCustomer(t *testing.T) {
+	addRandomCustomer(t)
 }
