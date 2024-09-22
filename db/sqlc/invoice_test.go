@@ -65,3 +65,38 @@ func TestAddLineItem(t *testing.T) {
 	require.Equal(t, arg.UnitPrice, lineItem.UnitPrice)
 	require.Equal(t, arg.Quantity*arg.UnitPrice, lineItem.TotalPrice)
 }
+
+func TestGetInvoiceLineItems(t *testing.T) {
+	invoice := addRandomNoItemsInvoice(t)
+
+	n := 5
+
+	existedLineItems := make(map[int64]bool)
+
+	for i := 0; i < n; i++ {
+		arg := AddLineItemParams{
+			InvoiceNumber: invoice.InvoiceNumber,
+			Description:   util.RandomString(10),
+			Quantity:      util.RandomInt(1, 10),
+			UnitPrice:     util.RandomInt(100, 1000),
+		}
+		arg.TotalPrice = arg.Quantity * arg.UnitPrice
+
+		lineItem, err := testDb.AddLineItem(context.Background(), arg)
+		require.NoError(t, err)
+		require.NotEmpty(t, lineItem)
+		existedLineItems[lineItem.ID] = true
+	}
+
+	lineItems, err := testDb.GetInvoiceLineItems(context.Background(), invoice.InvoiceNumber)
+	require.NoError(t, err)
+	require.Len(t, lineItems, n)
+
+	for _, lineItem := range lineItems {
+		require.NotZero(t, lineItem)
+		require.Equal(t, invoice.InvoiceNumber, lineItem.InvoiceNumber)
+
+		_, ok := existedLineItems[lineItem.ID]
+		require.True(t, ok)
+	}
+}

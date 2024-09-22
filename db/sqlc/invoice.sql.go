@@ -93,3 +93,34 @@ func (q *Queries) AddNoItemsInvoice(ctx context.Context, arg AddNoItemsInvoicePa
 	)
 	return i, err
 }
+
+const getInvoiceLineItems = `-- name: GetInvoiceLineItems :many
+SELECT id, invoice_number, description, quantity, unit_price, total_price FROM line_items WHERE invoice_number = $1
+`
+
+func (q *Queries) GetInvoiceLineItems(ctx context.Context, invoiceNumber int64) ([]LineItem, error) {
+	rows, err := q.db.Query(ctx, getInvoiceLineItems, invoiceNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LineItem{}
+	for rows.Next() {
+		var i LineItem
+		if err := rows.Scan(
+			&i.ID,
+			&i.InvoiceNumber,
+			&i.Description,
+			&i.Quantity,
+			&i.UnitPrice,
+			&i.TotalPrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -17,3 +17,6 @@ INSERT INTO line_items (
     unit_price,
     total_price
 ) VALUES ($1, $2, $3, $4, $5) RETURNING *;
+
+-- name: GetInvoiceLineItems :many
+SELECT * FROM line_items WHERE invoice_number = $1;
