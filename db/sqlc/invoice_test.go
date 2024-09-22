@@ -100,3 +100,10 @@ func TestGetInvoiceLineItems(t *testing.T) {
 		require.True(t, ok)
 	}
 }
+
+func TestGetInvoice(t *testing.T) {
+	invoice1 := addRandomNoItemsInvoice(t)
+	invoice2, err := testDb.GetInvoice(context.Background(), invoice1.InvoiceNumber)
+	require.NoError(t, err)
+	require.Equal(t, invoice1, invoice2)
+}

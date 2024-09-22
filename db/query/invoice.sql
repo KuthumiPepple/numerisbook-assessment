@@ -20,3 +20,6 @@ INSERT INTO line_items (
 
 -- name: GetInvoiceLineItems :many
 SELECT * FROM line_items WHERE invoice_number = $1;
+
+-- name: GetInvoice :one
+SELECT * FROM invoices WHERE invoice_number = $1;
