@@ -60,3 +60,15 @@ func RandomPastDate() time.Time {
 func RandomFutureDate() time.Time {
 	return time.Now().Add(time.Duration(RandomInt(1, 30)) * 24 * time.Hour)
 }
+
+// RandomStatusExcludingDraft generates a random status excluding draft
+func RandomStatusExcludingDraft() string {
+	status := []string{PENDING_PAYMENT, PAID, OVERDUE}
+	return status[rand.Intn(len(status))]
+}
+
+// RandomStatus generates a random status
+func RandomStatus() string {
+	status := []string{DRAFT, PENDING_PAYMENT, PAID, OVERDUE}
+	return status[rand.Intn(len(status))]
+}

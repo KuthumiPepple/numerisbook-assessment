@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/kuthumipepple/numerisbook-assessment/util"
 	"github.com/stretchr/testify/require"
 )
@@ -101,9 +102,144 @@ func TestGetInvoiceLineItems(t *testing.T) {
 	}
 }
 
-func TestGetInvoice(t *testing.T) {
-	invoice1 := addRandomNoItemsInvoice(t)
-	invoice2, err := testDb.GetInvoice(context.Background(), invoice1.InvoiceNumber)
+func TestUpdateInvoiceOnlyStatus(t *testing.T) {
+	oldInvoice := addRandomNoItemsInvoice(t)
+
+	newStatus := util.RandomStatusExcludingDraft()
+
+	updatedInvoice, err := testDb.UpdateInvoice(
+		context.Background(),
+		UpdateInvoiceParams{
+			InvoiceNumber: oldInvoice.InvoiceNumber,
+			Status: pgtype.Text{
+				String: newStatus,
+				Valid: true,
+			},
+		},
+	)
+
 	require.NoError(t, err)
-	require.Equal(t, invoice1, invoice2)
+	require.NotEqual(t, oldInvoice.Status, updatedInvoice.Status)
+	require.Equal(t, newStatus, updatedInvoice.Status)
+	require.Equal(t, oldInvoice.Subtotal, updatedInvoice.Subtotal)
+	require.Equal(t, oldInvoice.DiscountRate, updatedInvoice.DiscountRate)
+	require.Equal(t, oldInvoice.Discount, updatedInvoice.Discount)
+	require.Equal(t, oldInvoice.TotalAmount, updatedInvoice.TotalAmount)
+}
+
+func TestUpdateInvoiceOnlyDiscountRate(t *testing.T) {
+	oldInvoice := addRandomNoItemsInvoice(t)
+
+	newDiscountRate := util.RandomInt(1, 10)
+
+	updatedInvoice, err := testDb.UpdateInvoice(
+		context.Background(),
+		UpdateInvoiceParams{
+			InvoiceNumber: oldInvoice.InvoiceNumber,
+			DiscountRate: pgtype.Int8{
+				Int64:   newDiscountRate,
+				Valid: true,
+			},
+		},
+	)
+
+	require.NoError(t, err)
+	require.NotEqual(t, oldInvoice.DiscountRate, updatedInvoice.DiscountRate)
+	require.Equal(t, newDiscountRate, updatedInvoice.DiscountRate)
+	require.Equal(t, oldInvoice.Status, updatedInvoice.Status)
+	require.Equal(t, oldInvoice.Subtotal, updatedInvoice.Subtotal)
+	require.Equal(t, oldInvoice.Discount, updatedInvoice.Discount)
+	require.Equal(t, oldInvoice.TotalAmount, updatedInvoice.TotalAmount)
+}
+
+func TestUpdateInvoiceOnlyDiscountrateDiscountSubtotalTotalamount(t *testing.T) {
+	oldInvoice := addRandomNoItemsInvoice(t)
+
+	newSubtotal := util.RandomInt(1000, 10000) * 100
+	newDiscountRate := util.RandomInt(1, 10)
+	newDiscount := newSubtotal * newDiscountRate / 100
+	newTotalAmount := newSubtotal - newDiscount
+
+	updatedInvoice, err := testDb.UpdateInvoice(
+		context.Background(),
+		UpdateInvoiceParams{
+			InvoiceNumber: oldInvoice.InvoiceNumber,
+			Subtotal: pgtype.Int8{
+				Int64:   newSubtotal,
+				Valid: true,
+			},
+			DiscountRate: pgtype.Int8{
+				Int64:   newDiscountRate,
+				Valid: true,
+			},
+			Discount: pgtype.Int8{
+				Int64:   newDiscount,
+				Valid: true,
+			},
+			TotalAmount: pgtype.Int8{
+				Int64:   newTotalAmount,
+				Valid: true,
+			},
+		},
+	)
+
+	require.NoError(t, err)
+	require.NotEqual(t, oldInvoice.Subtotal, updatedInvoice.Subtotal)
+	require.NotEqual(t, oldInvoice.DiscountRate, updatedInvoice.DiscountRate)
+	require.NotEqual(t, oldInvoice.Discount, updatedInvoice.Discount)
+	require.NotEqual(t, oldInvoice.TotalAmount, updatedInvoice.TotalAmount)
+	require.Equal(t, newSubtotal, updatedInvoice.Subtotal)
+	require.Equal(t, newDiscountRate, updatedInvoice.DiscountRate)
+	require.Equal(t, newDiscount, updatedInvoice.Discount)
+	require.Equal(t, newTotalAmount, updatedInvoice.TotalAmount)
+	require.Equal(t, oldInvoice.Status, updatedInvoice.Status)
+}
+
+func TestUpdateInvoiceAllFields(t *testing.T) {
+	oldInvoice := addRandomNoItemsInvoice(t)
+
+	newStatus := util.RandomStatusExcludingDraft()
+	newSubtotal := util.RandomInt(1000, 10000) * 100
+	newDiscountRate := util.RandomInt(1, 10)
+	newDiscount := newSubtotal * newDiscountRate / 100
+	newTotalAmount := newSubtotal - newDiscount
+
+	updatedInvoice, err := testDb.UpdateInvoice(
+		context.Background(),
+		UpdateInvoiceParams{
+			InvoiceNumber: oldInvoice.InvoiceNumber,
+			Status: pgtype.Text{
+				String: newStatus,
+				Valid: true,
+			},
+			Subtotal: pgtype.Int8{
+				Int64:   newSubtotal,
+				Valid: true,
+			},
+			DiscountRate: pgtype.Int8{
+				Int64:   newDiscountRate,
+				Valid: true,
+			},
+			Discount: pgtype.Int8{
+				Int64:   newDiscount,
+				Valid: true,
+			},
+			TotalAmount: pgtype.Int8{
+				Int64:   newTotalAmount,
+				Valid: true,
+			},
+		},
+	)
+
+	require.NoError(t, err)
+	require.NotEqual(t, oldInvoice.Status, updatedInvoice.Status)
+	require.NotEqual(t, oldInvoice.Subtotal, updatedInvoice.Subtotal)
+	require.NotEqual(t, oldInvoice.DiscountRate, updatedInvoice.DiscountRate)
+	require.NotEqual(t, oldInvoice.Discount, updatedInvoice.Discount)
+	require.NotEqual(t, oldInvoice.TotalAmount, updatedInvoice.TotalAmount)
+	require.Equal(t, newStatus, updatedInvoice.Status)
+	require.Equal(t, newSubtotal, updatedInvoice.Subtotal)
+	require.Equal(t, newDiscountRate, updatedInvoice.DiscountRate)
+	require.Equal(t, newDiscount, updatedInvoice.Discount)
+	require.Equal(t, newTotalAmount, updatedInvoice.TotalAmount)
 }

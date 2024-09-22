@@ -13,8 +13,8 @@ type Querier interface {
 	AddLineItem(ctx context.Context, arg AddLineItemParams) (LineItem, error)
 	AddNoItemsInvoice(ctx context.Context, arg AddNoItemsInvoiceParams) (Invoice, error)
 	AddVendor(ctx context.Context, arg AddVendorParams) (Vendor, error)
-	GetInvoice(ctx context.Context, invoiceNumber int64) (Invoice, error)
 	GetInvoiceLineItems(ctx context.Context, invoiceNumber int64) ([]LineItem, error)
+	UpdateInvoice(ctx context.Context, arg UpdateInvoiceParams) (Invoice, error)
 }
 
 var _ Querier = (*Queries)(nil)

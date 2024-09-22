@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const addLineItem = `-- name: AddLineItem :one
@@ -94,30 +96,6 @@ func (q *Queries) AddNoItemsInvoice(ctx context.Context, arg AddNoItemsInvoicePa
 	return i, err
 }
 
-const getInvoice = `-- name: GetInvoice :one
-SELECT invoice_number, customer_id, vendor_id, issue_date, due_date, status, subtotal, discount_rate, discount, total_amount, billing_currency, note FROM invoices WHERE invoice_number = $1
-`
-
-func (q *Queries) GetInvoice(ctx context.Context, invoiceNumber int64) (Invoice, error) {
-	row := q.db.QueryRow(ctx, getInvoice, invoiceNumber)
-	var i Invoice
-	err := row.Scan(
-		&i.InvoiceNumber,
-		&i.CustomerID,
-		&i.VendorID,
-		&i.IssueDate,
-		&i.DueDate,
-		&i.Status,
-		&i.Subtotal,
-		&i.DiscountRate,
-		&i.Discount,
-		&i.TotalAmount,
-		&i.BillingCurrency,
-		&i.Note,
-	)
-	return i, err
-}
-
 const getInvoiceLineItems = `-- name: GetInvoiceLineItems :many
 SELECT id, invoice_number, description, quantity, unit_price, total_price FROM line_items WHERE invoice_number = $1
 `
@@ -147,4 +125,53 @@ func (q *Queries) GetInvoiceLineItems(ctx context.Context, invoiceNumber int64) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateInvoice = `-- name: UpdateInvoice :one
+UPDATE invoices
+SET
+    status = COALESCE($1, status),
+    subtotal = COALESCE($2, subtotal),
+    discount_rate = COALESCE($3, discount_rate),
+    discount = COALESCE($4, discount),
+    total_amount = COALESCE($5, total_amount)
+WHERE
+    invoice_number = $6
+RETURNING invoice_number, customer_id, vendor_id, issue_date, due_date, status, subtotal, discount_rate, discount, total_amount, billing_currency, note
+`
+
+type UpdateInvoiceParams struct {
+	Status        pgtype.Text `json:"status"`
+	Subtotal      pgtype.Int8 `json:"subtotal"`
+	DiscountRate  pgtype.Int8 `json:"discount_rate"`
+	Discount      pgtype.Int8 `json:"discount"`
+	TotalAmount   pgtype.Int8 `json:"total_amount"`
+	InvoiceNumber int64       `json:"invoice_number"`
+}
+
+func (q *Queries) UpdateInvoice(ctx context.Context, arg UpdateInvoiceParams) (Invoice, error) {
+	row := q.db.QueryRow(ctx, updateInvoice,
+		arg.Status,
+		arg.Subtotal,
+		arg.DiscountRate,
+		arg.Discount,
+		arg.TotalAmount,
+		arg.InvoiceNumber,
+	)
+	var i Invoice
+	err := row.Scan(
+		&i.InvoiceNumber,
+		&i.CustomerID,
+		&i.VendorID,
+		&i.IssueDate,
+		&i.DueDate,
+		&i.Status,
+		&i.Subtotal,
+		&i.DiscountRate,
+		&i.Discount,
+		&i.TotalAmount,
+		&i.BillingCurrency,
+		&i.Note,
+	)
+	return i, err
 }
