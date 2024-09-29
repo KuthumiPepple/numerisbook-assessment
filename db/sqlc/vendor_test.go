@@ -19,7 +19,7 @@ func addRandomVendor(t *testing.T) Vendor {
 		BankName:        util.RandomName(),
 	}
 
-	vendor, err := testDb.AddVendor(context.Background(), arg)
+	vendor, err := testStore.AddVendor(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, vendor)
 	require.Equal(t, arg.Name, vendor.Name)

@@ -9,17 +9,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var testDb *Queries
+var testStore Store
 
 func TestMain(m *testing.M) {
-	testDbSource := "postgresql://root:secret@localhost:5432/numerisbookdb?sslmode=disable"
+	testStoreSource := "postgresql://root:secret@localhost:5432/numerisbookdb?sslmode=disable"
 
-	connPool, err := pgxpool.New(context.Background(), testDbSource)
+	connPool, err := pgxpool.New(context.Background(), testStoreSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
 
-	testDb = New(connPool)
+	testStore = NewStore(connPool)
 
 	os.Exit(m.Run())
 }

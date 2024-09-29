@@ -16,7 +16,7 @@ func addRandomCustomer(t *testing.T) Customer {
 		Email:   util.RandomEmail(),
 	}
 
-	customer, err := testDb.AddCustomer(context.Background(), arg)
+	customer, err := testStore.AddCustomer(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, customer)
 	require.Equal(t, arg.Name, customer.Name)

@@ -22,7 +22,7 @@ func addRandomNoItemsInvoice(t *testing.T) Invoice {
 		DiscountRate: util.RandomInt(1, 10),
 	}
 
-	invoice, err := testDb.AddNoItemsInvoice(context.Background(), arg)
+	invoice, err := testStore.AddNoItemsInvoice(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, invoice)
 	require.NotZero(t, invoice.InvoiceNumber)
@@ -56,7 +56,7 @@ func TestAddLineItem(t *testing.T) {
 	}
 	arg.TotalPrice = arg.Quantity * arg.UnitPrice
 
-	lineItem, err := testDb.AddLineItem(context.Background(), arg)
+	lineItem, err := testStore.AddLineItem(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, lineItem)
 	require.NotZero(t, lineItem.ID)
@@ -83,13 +83,13 @@ func TestGetInvoiceLineItems(t *testing.T) {
 		}
 		arg.TotalPrice = arg.Quantity * arg.UnitPrice
 
-		lineItem, err := testDb.AddLineItem(context.Background(), arg)
+		lineItem, err := testStore.AddLineItem(context.Background(), arg)
 		require.NoError(t, err)
 		require.NotEmpty(t, lineItem)
 		existedLineItems[lineItem.ID] = true
 	}
 
-	lineItems, err := testDb.GetInvoiceLineItems(context.Background(), invoice.InvoiceNumber)
+	lineItems, err := testStore.GetInvoiceLineItems(context.Background(), invoice.InvoiceNumber)
 	require.NoError(t, err)
 	require.Len(t, lineItems, n)
 
@@ -107,13 +107,13 @@ func TestUpdateInvoiceOnlyStatus(t *testing.T) {
 
 	newStatus := util.RandomStatusExcludingDraft()
 
-	updatedInvoice, err := testDb.UpdateInvoice(
+	updatedInvoice, err := testStore.UpdateInvoice(
 		context.Background(),
 		UpdateInvoiceParams{
 			InvoiceNumber: oldInvoice.InvoiceNumber,
 			Status: pgtype.Text{
 				String: newStatus,
-				Valid: true,
+				Valid:  true,
 			},
 		},
 	)
@@ -132,12 +132,12 @@ func TestUpdateInvoiceOnlyDiscountRate(t *testing.T) {
 
 	newDiscountRate := util.RandomInt(1, 10)
 
-	updatedInvoice, err := testDb.UpdateInvoice(
+	updatedInvoice, err := testStore.UpdateInvoice(
 		context.Background(),
 		UpdateInvoiceParams{
 			InvoiceNumber: oldInvoice.InvoiceNumber,
 			DiscountRate: pgtype.Int8{
-				Int64:   newDiscountRate,
+				Int64: newDiscountRate,
 				Valid: true,
 			},
 		},
@@ -160,24 +160,24 @@ func TestUpdateInvoiceOnlyDiscountrateDiscountSubtotalTotalamount(t *testing.T) 
 	newDiscount := newSubtotal * newDiscountRate / 100
 	newTotalAmount := newSubtotal - newDiscount
 
-	updatedInvoice, err := testDb.UpdateInvoice(
+	updatedInvoice, err := testStore.UpdateInvoice(
 		context.Background(),
 		UpdateInvoiceParams{
 			InvoiceNumber: oldInvoice.InvoiceNumber,
 			Subtotal: pgtype.Int8{
-				Int64:   newSubtotal,
+				Int64: newSubtotal,
 				Valid: true,
 			},
 			DiscountRate: pgtype.Int8{
-				Int64:   newDiscountRate,
+				Int64: newDiscountRate,
 				Valid: true,
 			},
 			Discount: pgtype.Int8{
-				Int64:   newDiscount,
+				Int64: newDiscount,
 				Valid: true,
 			},
 			TotalAmount: pgtype.Int8{
-				Int64:   newTotalAmount,
+				Int64: newTotalAmount,
 				Valid: true,
 			},
 		},
@@ -204,28 +204,28 @@ func TestUpdateInvoiceAllFields(t *testing.T) {
 	newDiscount := newSubtotal * newDiscountRate / 100
 	newTotalAmount := newSubtotal - newDiscount
 
-	updatedInvoice, err := testDb.UpdateInvoice(
+	updatedInvoice, err := testStore.UpdateInvoice(
 		context.Background(),
 		UpdateInvoiceParams{
 			InvoiceNumber: oldInvoice.InvoiceNumber,
 			Status: pgtype.Text{
 				String: newStatus,
-				Valid: true,
+				Valid:  true,
 			},
 			Subtotal: pgtype.Int8{
-				Int64:   newSubtotal,
+				Int64: newSubtotal,
 				Valid: true,
 			},
 			DiscountRate: pgtype.Int8{
-				Int64:   newDiscountRate,
+				Int64: newDiscountRate,
 				Valid: true,
 			},
 			Discount: pgtype.Int8{
-				Int64:   newDiscount,
+				Int64: newDiscount,
 				Valid: true,
 			},
 			TotalAmount: pgtype.Int8{
-				Int64:   newTotalAmount,
+				Int64: newTotalAmount,
 				Valid: true,
 			},
 		},

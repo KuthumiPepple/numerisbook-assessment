@@ -2,10 +2,10 @@ package util
 
 // Constants for all valid invoice status
 const (
-	DRAFT = "draft"
+	DRAFT           = "draft"
 	PENDING_PAYMENT = "pending_payment"
-	OVERDUE = "overdue"
-	PAID = "paid"
+	OVERDUE         = "overdue"
+	PAID            = "paid"
 )
 
 // IsValidStatus returns true if s is a valid invoice status
