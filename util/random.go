@@ -51,16 +51,6 @@ func RandomAddress() string {
 	return fmt.Sprintf("%d %s St", RandomInt(1, 999), RandomString(5))
 }
 
-// RandomDate generates a random past date relative to the current time
-func RandomPastDate() time.Time {
-	return time.Now().Add(-time.Duration(RandomInt(1, 30)) * 24 * time.Hour)
-}
-
-// RandomDate generates a random future date relative to the current time
-func RandomFutureDate() time.Time {
-	return time.Now().Add(time.Duration(RandomInt(1, 30)) * 24 * time.Hour)
-}
-
 // RandomStatusExcludingDraft generates a random status excluding draft
 func RandomStatusExcludingDraft() string {
 	status := []string{PENDING_PAYMENT, PAID, OVERDUE}

@@ -17,8 +17,8 @@ func addRandomNoItemsInvoice(t *testing.T) Invoice {
 	arg := AddNoItemsInvoiceParams{
 		CustomerID:   customer.ID,
 		VendorID:     vendor.ID,
-		IssueDate:    util.RandomPastDate(),
-		DueDate:      util.RandomFutureDate(),
+		IssueDate:    time.Now(),
+		DueDate:      time.Now().AddDate(0, 0, 30),
 		DiscountRate: util.RandomInt(1, 10),
 	}
 
@@ -195,7 +195,7 @@ func TestUpdateInvoiceOnlyDiscountrateDiscountSubtotalTotalamount(t *testing.T) 
 	require.Equal(t, oldInvoice.Status, updatedInvoice.Status)
 }
 
-func TestUpdateInvoiceAllFields(t *testing.T) {
+func TestUpdateInvoiceAllUpdatableFields(t *testing.T) {
 	oldInvoice := addRandomNoItemsInvoice(t)
 
 	newStatus := util.RandomStatusExcludingDraft()

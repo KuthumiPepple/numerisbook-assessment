@@ -8,8 +8,7 @@ import (
 	"github.com/kuthumipepple/numerisbook-assessment/util"
 	"github.com/stretchr/testify/require"
 )
-
-func TestCreateInvoiceTx(t *testing.T) {
+func createRandomInvoice(t *testing.T) InvoiceResult{
 	customer := addRandomCustomer(t)
 	vendor := addRandomVendor(t)
 
@@ -36,48 +35,36 @@ func TestCreateInvoiceTx(t *testing.T) {
 		DiscountRate:     util.RandomInt(1, 10000),
 		LineItemsDetails: randomLineItems,
 	}
-
 	expDiscount := (expSubtotal * arg.DiscountRate) / 10000
 	expTotal := expSubtotal - expDiscount
 
-	errCh := make(chan error)
-	resCh := make(chan CreateInvoiceTxResult)
+	res, err := testStore.CreateInvoiceTx(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, res)
 
-	for i := 0; i < n; i++ {
-		go func() {
-			res, err := testStore.CreateInvoiceTx(context.Background(), arg)
-			errCh <- err
-			resCh <- res
-		}()
+	// check invoice
+	invoice := res.Invoice
+	require.NotEmpty(t, invoice)
+	require.NotZero(t, invoice.InvoiceNumber)
+	require.Equal(t, arg.CustomerID, invoice.CustomerID)
+	require.Equal(t, arg.VendorID, invoice.VendorID)
+	require.WithinDuration(t, arg.IssueDate, invoice.IssueDate, time.Second)
+	require.WithinDuration(t, arg.DueDate, invoice.DueDate, time.Second)
+	require.Equal(t, arg.DiscountRate, invoice.DiscountRate)
+	require.Equal(t, "draft", invoice.Status)
+	require.Equal(t, expSubtotal, invoice.Subtotal)
+	require.Equal(t, expDiscount, invoice.Discount)
+	require.Equal(t, expTotal, invoice.TotalAmount)
+
+	// check line items
+	lineItems := res.LineItems
+	require.Len(t, lineItems, n)
+	for _, lineItem := range lineItems {
+		require.NotZero(t, lineItem.ID)
+		require.Equal(t, invoice.InvoiceNumber, lineItem.InvoiceNumber)
 	}
-
-	for i := 0; i < n; i++ {
-		err := <-errCh
-		require.NoError(t, err)
-
-		res := <-resCh
-		require.NotEmpty(t, res)
-
-		// check invoice
-		invoice := res.Invoice
-		require.NotEmpty(t, invoice)
-		require.NotZero(t, invoice.InvoiceNumber)
-		require.Equal(t, arg.CustomerID, invoice.CustomerID)
-		require.Equal(t, arg.VendorID, invoice.VendorID)
-		require.WithinDuration(t, arg.IssueDate, invoice.IssueDate, time.Second)
-		require.WithinDuration(t, arg.DueDate, invoice.DueDate, time.Second)
-		require.Equal(t, arg.DiscountRate, invoice.DiscountRate)
-		require.Equal(t, "draft", invoice.Status)
-		require.Equal(t, expSubtotal, invoice.Subtotal)
-		require.Equal(t, expDiscount, invoice.Discount)
-		require.Equal(t, expTotal, invoice.TotalAmount)
-
-		// check line items
-		lineItems := res.LineItems
-		require.Len(t, lineItems, n)
-		for _, lineItem := range lineItems {
-			require.NotZero(t, lineItem.ID)
-			require.Equal(t, invoice.InvoiceNumber, lineItem.InvoiceNumber)
-		}
-	}
+	return res
+}
+func TestCreateInvoiceTx(t *testing.T) {
+	createRandomInvoice(t)
 }

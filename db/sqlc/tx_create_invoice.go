@@ -22,13 +22,13 @@ type CreateInvoiceTxParams struct {
 	LineItemsDetails []LineItemDetail `json:"line_items"`
 }
 
-type CreateInvoiceTxResult struct {
+type InvoiceResult struct {
 	Invoice   Invoice    `json:"invoice"`
 	LineItems []LineItem `json:"line_items"`
 }
 
-func (store *SQLStore) CreateInvoiceTx(ctx context.Context, arg CreateInvoiceTxParams) (CreateInvoiceTxResult, error) {
-	var result CreateInvoiceTxResult
+func (store *SQLStore) CreateInvoiceTx(ctx context.Context, arg CreateInvoiceTxParams) (InvoiceResult, error) {
+	var result InvoiceResult
 
 	err := store.execTx(
 		ctx,
